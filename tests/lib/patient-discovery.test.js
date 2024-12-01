@@ -1,6 +1,9 @@
 const nock = require("nock");
 
-const PatientDiscovery = require("../../lib/PatientDiscovery");
+const {
+  patientReference,
+  fetchPatientIdentifier
+} = require("../../lib/patient-discovery");
 
 const FHIR_SERVER_BASE =
   process.env.FHIR_SERVER_BASE || "https://mock-fhir-server/base";
@@ -16,7 +19,7 @@ afterEach(() => {
 
 it("should correctly fetch patient ref from resource", () => {
   const resource = require("../fixtures/medication-statement.json");
-  expect(PatientDiscovery.patientReference(resource)).toEqual("Patient/1");
+  expect(patientReference(resource)).toEqual("Patient/1");
 });
 
 it("should correctly call and fetch patient identifiers", async () => {
@@ -24,9 +27,7 @@ it("should correctly call and fetch patient identifiers", async () => {
   const patient = require("../fixtures/patient.json");
   MOCK_FHIR_SERVER.get("/Patient/1").reply(200, patient);
 
-  const patientIdentifiers = await PatientDiscovery.fetchPatientIdentifier(
-    "Patient/1"
-  );
+  const patientIdentifiers = await fetchPatientIdentifier("Patient/1");
 
   expect(patientIdentifiers).toEqual([
     { system: "urn:official:id", value: "10001" }

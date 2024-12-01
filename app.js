@@ -3,7 +3,7 @@ const morgan = require("morgan");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const logger = require("./lib/logger");
 
-const FHIRProxy = require("./controllers/FHIRProxy");
+const { onProxyReq, onProxyRes } = require("./controllers/fhir-proxy");
 
 const FHIR_SERVER_BASE = process.env.FHIR_SERVER_BASE;
 
@@ -17,8 +17,8 @@ process.env.NODE_ENV === "production" || app.use(morgan("dev"));
 const proxyOptions = {
   target: FHIR_SERVER_BASE,
   on: {
-    proxyRes: FHIRProxy.onProxyRes,
-    proxyReq: FHIRProxy.onProxyReq
+    proxyRes: onProxyRes,
+    proxyReq: onProxyReq
   },
   xfwd: true,
   changeOrigin: true,

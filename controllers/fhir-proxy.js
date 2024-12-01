@@ -1,8 +1,13 @@
 const logger = require("../lib/logger");
 
-const ConsentEnforcementService = require("../lib/ConsentEnforcementService");
-const ResponseUtils = require("../lib/ResponseUtils");
-const ErrorUtils = require("../lib/ErrorUtils");
+const { processFHIRResponse } = require("../lib/consent-enforcement-service");
+const {
+  sendResponse,
+  responseIsError,
+  sendJsonResponse,
+  parseResponseBody
+} = require("../lib/response-utils");
+const { proxyResponseExceptionResponse } = require("../lib/error-utils");
 
 const FHIR_SERVER_BASE = process.env.FHIR_SERVER_BASE;
 let PROXY_PATH_PREFIX = new URL(FHIR_SERVER_BASE).pathname;
@@ -36,36 +41,25 @@ async function onProxyRes(proxyRes, req, res) {
 }
 
 function sendIntactResponse(rawBackendBody, proxyRes, req, res) {
-  ResponseUtils.sendResponse(
-    res,
-    proxyRes.headers,
-    proxyRes.statusCode,
-    rawBackendBody
-  );
+  sendResponse(res, proxyRes.headers, proxyRes.statusCode, rawBackendBody);
   res.end();
 }
 
 async function processResponse(rawBackendBody, proxyRes, req, res) {
   try {
-    if (ResponseUtils.responseIsError(proxyRes)) {
-      ResponseUtils.sendResponse(
-        res,
-        proxyRes.headers,
-        proxyRes.statusCode,
-        rawBackendBody
-      );
+    if (responseIsError(proxyRes)) {
+      sendResponse(res, proxyRes.headers, proxyRes.statusCode, rawBackendBody);
     } else {
-      const parsedBackendResponse = ResponseUtils.parseResponseBody(
+      const parsedBackendResponse = parseResponseBody(
         rawBackendBody,
         proxyRes.headers
       );
 
-      const modifiedResponse =
-        await ConsentEnforcementService.processFHIRResponse(
-          req,
-          parsedBackendResponse
-        );
-      ResponseUtils.sendJsonResponse(
+      const modifiedResponse = await processFHIRResponse(
+        req,
+        parsedBackendResponse
+      );
+      sendJsonResponse(
         res,
         proxyRes.headers,
         proxyRes.statusCode,
@@ -73,8 +67,8 @@ async function processResponse(rawBackendBody, proxyRes, req, res) {
       );
     }
   } catch (e) {
-    const errorResponse = ErrorUtils.proxyResponseExceptionResponse(e);
-    ResponseUtils.sendJsonResponse(
+    const errorResponse = proxyResponseExceptionResponse(e);
+    sendJsonResponse(
       res,
       errorResponse.headers,
       errorResponse.status,
