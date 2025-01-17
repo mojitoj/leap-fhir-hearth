@@ -11,7 +11,8 @@ const FHIR_SERVER_BASE =
 
 const CDS_HOST = process.env.CDS_HOST || "https://mock-cds";
 const CDS_ENDPOINT = "/cds-services/patient-consent-consult";
-const SLS_ENDPOINT = "/sls";
+const SLS_ENDPOINT = process.env.SLS_ENDPOINT;
+const {origin: SLS_HOST, pathname: SLS_PATH} = new URL(SLS_ENDPOINT)
 
 const CDS_PERMIT_RESPONSE = {
   cards: [
@@ -138,6 +139,10 @@ const MOCK_CDS = nock(CDS_HOST)
   .defaultReplyHeaders({ "Content-Type": "application/json; charset=utf-8" })
   .replyContentLength();
 
+const MOCK_SLS = nock(SLS_HOST)
+  .defaultReplyHeaders({ "Content-Type": "application/json; charset=utf-8" })
+  .replyContentLength();
+
 beforeEach(async () => {});
 
 afterEach(() => {
@@ -156,7 +161,7 @@ it("should fetch a resource if consent permits", async () => {
   MOCK_FHIR_SERVER.get("/Patient/1").reply(200, patient);
   MOCK_FHIR_SERVER.get("/MedicationStatement/1").reply(200, medication);
 
-  MOCK_CDS.post(SLS_ENDPOINT).reply(200, medication);
+  MOCK_SLS.post(SLS_PATH).reply(200, medication);
   MOCK_CDS.post(CDS_ENDPOINT).reply(200, CDS_PERMIT_RESPONSE);
 
   const res = await request(app)
@@ -175,7 +180,7 @@ it("should send 404 if consent denies", async () => {
   MOCK_FHIR_SERVER.get("/Patient/1").reply(200, patient);
   MOCK_FHIR_SERVER.get("/MedicationStatement/1").reply(200, medication);
 
-  MOCK_CDS.post(SLS_ENDPOINT).reply(200, medication);
+  MOCK_SLS.post(SLS_PATH).reply(200, medication);
   MOCK_CDS.post(CDS_ENDPOINT).reply(200, CDS_DENY_RESPONSE);
 
   const res = await request(app)
@@ -193,7 +198,7 @@ it("should send 404 if consent obligation requires redaction", async () => {
   MOCK_FHIR_SERVER.get("/Patient/1").reply(200, patient);
   MOCK_FHIR_SERVER.get("/MedicationStatement/1").reply(200, medication);
 
-  MOCK_CDS.post(SLS_ENDPOINT).reply(200, medication);
+  MOCK_SLS.post(SLS_PATH).reply(200, medication);
   MOCK_CDS.post(CDS_ENDPOINT).reply(200, CDS_PERMIT_RESPONSE);
 
   const res = await request(app)
@@ -213,7 +218,7 @@ it("should fetch a bundle and return only the resources which the consent permit
   MOCK_FHIR_SERVER.get("/Patient/2").reply(200, patient2);
   MOCK_FHIR_SERVER.get("/MedicationStatement").reply(200, medicationBundle);
 
-  MOCK_CDS.post(SLS_ENDPOINT).reply(200, medicationBundle);
+  MOCK_SLS.post(SLS_PATH).reply(200, medicationBundle);
   MOCK_CDS.post(CDS_ENDPOINT).reply(200, CDS_PERMIT_RESPONSE);
   MOCK_CDS.post(CDS_ENDPOINT).reply(200, CDS_DENY_RESPONSE);
 
@@ -236,7 +241,7 @@ it("should fetch a bundle and return only the resources which the consent permit
   MOCK_FHIR_SERVER.get("/Patient/2").reply(200, patient2);
   MOCK_FHIR_SERVER.get("/MedicationStatement").reply(200, medicationBundle);
 
-  MOCK_CDS.post(SLS_ENDPOINT).reply(200, medicationBundle);
+  MOCK_SLS.post(SLS_PATH).reply(200, medicationBundle);
   MOCK_CDS.post(CDS_ENDPOINT).reply(
     200,
     CDS_PERMIT_RESPONSE_CONTENT_CLASS_OBLIGATION
