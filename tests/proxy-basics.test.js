@@ -19,15 +19,15 @@ afterEach(() => {
 
 it("should return a bundle of unprotected resources as-is", async () => {
   expect.assertions(2);
-  const bundleRsponse = require("./fixtures/patient-bundle.json");
-  MOCK_FHIR_SERVER.get("/Patient").reply(200, bundleRsponse);
+  const bundleResponse = require("./fixtures/patient-bundle.json");
+  MOCK_FHIR_SERVER.get("/Patient").reply(200, bundleResponse);
 
   const res = await request(app)
     .get("/Patient")
     .set("content-type", "application/json");
 
   expect(res.status).toEqual(200);
-  expect(res.body).toEqual(bundleRsponse);
+  expect(res.body).toEqual(bundleResponse);
 });
 
 it("should return an unprotected resources as-is", async () => {
@@ -45,9 +45,9 @@ it("should return an unprotected resources as-is", async () => {
 
 it("should be able to handle and parse gzip-encoded response from the backend", async () => {
   expect.assertions(2);
-  const bundleRsponse = require("./fixtures/patient-bundle.json");
+  const bundleResponse = require("./fixtures/patient-bundle.json");
   const gzippedResponse = zlib.gzipSync(
-    Buffer.from(JSON.stringify(bundleRsponse), "utf8")
+    Buffer.from(JSON.stringify(bundleResponse), "utf8")
   );
   MOCK_FHIR_SERVER.get("/Patient").reply(200, gzippedResponse, {
     "Content-Encoding": "gzip"
@@ -58,7 +58,7 @@ it("should be able to handle and parse gzip-encoded response from the backend", 
     .set("content-type", "application/json");
 
   expect(res.status).toEqual(200);
-  expect(res.body).toEqual(bundleRsponse);
+  expect(res.body).toEqual(bundleResponse);
 });
 
 it("should return a 404 if the resources does not exists", async () => {
