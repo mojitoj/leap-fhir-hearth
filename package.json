@@ -10,20 +10,20 @@
     "create-env": "printenv > .env"
   },
   "dependencies": {
-    "dotenv": "^17.0.0",
-    "express": "^5.1.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "http-proxy-middleware": "^3.0.5",
-    "jsonwebtoken": "^9.0.2",
-    "lodash": "^4.17.21",
-    "morgan": "^1.10.0",
+    "jsonwebtoken": "^9.0.3",
+    "lodash": "^4.18.1",
+    "morgan": "^1.11.0",
     "object-hash": "^3.0.0",
-    "superagent": "^10.2.1",
-    "winston": "^3.17.0"
+    "superagent": "^10.3.0",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
-    "jest": "^30.0.3",
+    "jest": "^30.4.2",
     "nock": "^13.5.6",
-    "supertest": "^7.1.1"
+    "supertest": "^7.2.2"
   },
   "packageManager": "yarn@3.4.1",
   "engines": {
