@@ -1,4 +1,5 @@
 const zlib = require("zlib");
+const path = require("path");
 const request = require("supertest");
 const nock = require("nock");
 const _ = require("lodash");
@@ -20,7 +21,12 @@ afterEach(() => {
 it("should return a bundle of unprotected resources as-is", async () => {
   expect.assertions(2);
   const bundleResponse = require("./fixtures/patient-bundle.json");
-  MOCK_FHIR_SERVER.get("/Patient").reply(200, bundleResponse);
+
+  MOCK_FHIR_SERVER.get("/Patient").replyWithFile(
+    200,
+    path.join(__dirname, "fixtures", "patient-bundle.json"),
+    { "Content-Type": "application/json" }
+  );
 
   const res = await request(app)
     .get("/Patient")
